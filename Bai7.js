@@ -1,9 +1,9 @@
 var VSHADER_SOURCE =
     'precision mediump float;' +
     'attribute vec4 a_position;' +
-    'uniform vec4 u_tran;' +
+    'uniform mat4 u_xformMatrix;' +
     'void main(){' +
-    'gl_Position = a_position + u_tran;' +
+    'gl_Position = u_xformMatrix*a_position;' +
     'gl_PointSize = 10.0;' +
     '}';
 var FSHADER_SOURCE =
@@ -13,17 +13,19 @@ var FSHADER_SOURCE =
     'gl_FragColor = u_color;' +
     '}';
 
-
-
-
 function main() {
     var canvas = document.getElementById("webgl")
     var gl = getWebGLContext(canvas);
     initShaders(gl, VSHADER_SOURCE, FSHADER_SOURCE);
     var u_color = gl.getUniformLocation(gl.program, 'u_color')
     var a_position = gl.getAttribLocation(gl.program, 'a_position');
-    var u_tran = gl.getUniformLocation(gl.program, 'u_tran')
-    gl.uniform4f(u_tran, 0.5, 0.5, 0.0, 0.0)
+    var u_xformMatrix = gl.getUniformLocation(gl.program, "u_xformMatrix")
+    var xformMatrix = new Float32Array([
+        0.71, 0.71, 0.0, 0.0,
+        -0.71, 0.71, 0.0, 0.0,
+        0.0, 0.0, 1.0, 0.0,
+        0.0, 0.0, 0.0, 1.0
+    ])
     gl.uniform4f(u_color, 1.0, 0.0, 0.0, 1.0)
     var vertices = new Float32Array([
         0.5, 0.5,
@@ -32,6 +34,7 @@ function main() {
         0.5, -0.5,
         0.5, 0.5
     ])
+    gl.uniformMatrix4fv(u_xformMatrix, false, xformMatrix)
     var buffer = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer)
     gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW)
